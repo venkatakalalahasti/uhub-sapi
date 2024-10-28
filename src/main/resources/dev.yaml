@@ -1,0 +1,10 @@
+http:
+  port: "8081"
+
+db:
+  uhub:
+    host: "localhost"
+    port: "1521"
+    username: "sys as sysdba"
+    password: "![+AT3s2G9zS0m3+9pw5TIIQ==]"
+    instance: "orcl"

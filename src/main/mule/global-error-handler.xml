@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="error-handler-sub-flow" doc:id="a3a8b178-315d-41b2-b45d-0912bc260bc3" >
+		<set-variable value="#[if (!(isEmpty(vars.errorDescription)))&#10;	vars.errorDescription&#10;else &#10;	error.description]" doc:name="Set Variable" doc:id="56f6ca5e-828b-45fd-8190-e7f6d0591f87" variableName="errorDescription"/>
+		<ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "code":vars.errorCode,
+   "message": vars.errorMessage,
+   "description": vars.errorDescription,
+   "dateTime": now() as String {format: "yyyy-MM-dd'T'hh:mm:ss'Z'"},
+   "transactionId": vars.transactionId
+   
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[vars.errorCode]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ab397b15-15f5-45ee-a25a-d4b46c53d6dc" message="#[vars.transactionId]"/>
+	</sub-flow>
+	<error-handler name="global-error-handlerError_Handler" doc:id="9b0e62c5-9200-48c3-849a-ff82060a5e80" >
+	
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <set-variable value="400" doc:name="Set Http Status Code 400" doc:id="b11c5d5d-a730-429b-9af9-b7287e444085" variableName="errorCode"/>
+			<set-variable value='#["Bad request"]' doc:name="Set Error Msg" doc:id="6f30e051-6195-4730-84d2-3b65a807c18d" variableName="errorMessage"/>
+			<set-variable value='#["required key not found"]' doc:name="Set Error Description" doc:id="2738d180-353a-46b4-972e-a4c40fb60146" variableName="errorDescription"/>
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="55a7f8b7-3461-413a-993b-b940403c67a4" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+			<set-variable value="404" doc:name="Set Http Status Code 404" doc:id="d754429c-1473-4be3-b16a-0b010b963c65" variableName="errorCode" />
+			<set-variable value='#["Resource not found"]' doc:name="Set Error Msg" doc:id="906b64c5-9a76-4d2e-b76a-873006ce8b45" variableName="errorMessage" />
+			<set-variable value='#["The server has not found anything matching the Request-URI"]' doc:name="Set Error Description" doc:id="ab5fb9a0-b227-4e14-ac56-df62da102170" variableName="errorDescription" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="9ee073cd-81c9-4eda-8a72-aa982a4b77ce" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+			<set-variable value="405" doc:name="Set Http Status Code 405" doc:id="e1436400-07a5-4512-9aae-d2c5969f683d" variableName="errorCode" />
+			<set-variable value='#["Bad request"]' doc:name="Set Error Msg" doc:id="aaeb0661-31dc-4c0d-90ef-840872bb7e7e" variableName="errorMessage" />
+			<set-variable value='#["required key not found"]' doc:name="Set Error Description" doc:id="bd388d1e-4863-4886-8857-a0594d8d03da" variableName="errorDescription" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="074a0ede-79ef-42b8-b128-96014cae2f3b" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+			<set-variable value="406" doc:name="Set Http Status Code 406" doc:id="95387ae8-56fe-44bc-8d76-d94f5b2241d1" variableName="errorCode" />
+			<set-variable value='#["Not acceptable"]' doc:name="Set Error Msg" doc:id="909e869d-1646-400d-9d47-bf3841d6375e" variableName="errorMessage" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="231f2175-09f6-49f3-bd30-104f04f6dd8d" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+			<set-variable value="415" doc:name="Set Http Status Code 415" doc:id="2f8f6735-4b84-43c5-bde6-7f57abcf4afb" variableName="errorCode" />
+			<set-variable value='#["Unsupported media type"]' doc:name="Set Error Msg" doc:id="3e8d37e0-dadb-4f96-9559-cc4e649b62bf" variableName="errorMessage" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="027941da-96ca-46da-96f8-2bb26d3e6914" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+			<set-variable value="501" doc:name="Set Http Status Code 501" doc:id="c42da2b3-0d61-45b2-9eb4-1c79b32912c2" variableName="errorCode" />
+			<set-variable value='#["not implemented"]' doc:name="Set Error Msg" doc:id="86b1e340-1bee-4c89-b1c1-f1a3044ca5ff" variableName="errorMessage" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="a21d5c14-f667-4a0a-9d90-89d48277db0b" name="error-handler-sub-flow" />
+            
+</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9789d626-eb57-463c-a2f9-decd96b9200a" type="CONNECTIVITY">
+			<set-variable value="503" doc:name="Set Http Status Code 503 " doc:id="2513b9b3-77cf-4f1f-b8a2-ed65a12517ec" variableName="errorCode" />
+			<set-variable value='#["Service unavailable"]' doc:name="Set Error Msg" doc:id="1a0bf7c2-030c-4944-9e9d-1af0dad94445" variableName="errorMessage" />
+			<set-variable value='#["The (upstream) service is temporarily   not available"]' doc:name="Set Error Description" doc:id="7efdf204-2c82-4305-9780-1be662cf89fc" variableName="errorDescription" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="673d1a88-4db5-4537-bee1-b8ee2bb7c2f9" name="error-handler-sub-flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6e190910-4750-4429-964a-c5565376dda2" type="ANY">
+			<set-variable value="500" doc:name="Set Http Status Code 500" doc:id="83e685a3-360b-48da-965b-83b713ee10ba" variableName="errorCode" />
+			<set-variable value='#["Internal server error"]' doc:name="Set Error Msg" doc:id="f87d1c90-5f1d-4422-a322-6b25256a94d6" variableName="errorMessage" />
+			<set-variable value='#["The (upstream) service is temporarily   not available"]' doc:name="Set Error Description" doc:id="1340981f-4482-4b2d-93a7-56be405eeb83" variableName="errorDescription" />
+			<flow-ref doc:name="Error Handler Sub Flow" doc:id="19c0e74c-0a2d-4849-969b-d7755da3cc94" name="error-handler-sub-flow" />
+		</on-error-propagate>
+        
+</error-handler>
+</mule>

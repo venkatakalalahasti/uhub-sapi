@@ -1,0 +1,137 @@
+#%RAML 1.0
+title: uhub-sapi
+version: v1
+baseUri: http://{environments}:8081/covid/{version}
+baseUriParameters:
+  environments:
+    enum: [dev, uat, test]
+securitySchemes:
+  oauth 2.0: !include /exchange_modules/15e4f7b8-5b49-4582-bcd5-d3b7e4ec3f9a/uhub-oauth20-security-scheme/1.0.0/uhub-oauth20-security-scheme.raml
+uses:
+  uhub-sapi-common-datatypes: /uhub-sapi-datatypes-library/uhub-sapi-datatypes-library.raml
+  error-common-datatypes: /exchange_modules/15e4f7b8-5b49-4582-bcd5-d3b7e4ec3f9a/uhub-sapi-common-datatypes-library/1.0.0/uhub-sapi-common-datatypes-library.raml
+  
+traits:
+  x-co-relation-id-header: !include /exchange_modules/15e4f7b8-5b49-4582-bcd5-d3b7e4ec3f9a/uhub-co-realation-id-header/1.0.2/x-co-relation-id-header.raml
+  x-transaction-id-header: !include /exchange_modules/15e4f7b8-5b49-4582-bcd5-d3b7e4ec3f9a/x-transaction-id-header/1.0.0/x-transaction-id-header.raml
+  get-covid-reports-queryparam-trait: !include /traits/get-covid-reports-queryparam-trait.raml
+/cases:
+  post:
+    securedBy: [oauth 2.0]
+    is: [x-co-relation-id-header, x-transaction-id-header] 
+    body:
+      application/json:
+        type: uhub-sapi-common-datatypes.register-covid-case-request-datatypes
+        example: !include examples/regiset-covid-case-request-payload.json
+    responses:
+      201:
+        body:
+          application/json:
+            type: uhub-sapi-common-datatypes.register-covid-case-response-datatypes
+            example: !include examples/register-covid-case-response-payload.json
+             
+      400:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-400.json
+             
+      503:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-503.json
+             
+      500:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-500.json
+  put:
+    securedBy: [oauth 2.0]
+    is: [x-co-relation-id-header, x-transaction-id-header]
+    body:
+      application/xml:
+        type: uhub-sapi-common-datatypes.update-covid-case-request-datatypes
+        example: !include examples/update-covid-case-request-payload.xml
+              
+    responses:
+      200:
+        body:
+          application/xml:
+            type: uhub-sapi-common-datatypes.update-covid-case-response-datatypes
+            example: !include examples/update-covid-case-response-payload.xml
+              
+      400:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-400.json
+             
+      503:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-503.json
+            
+      500:
+        body:
+          application/json:
+            type: error-common-datatypes.error-common-datatypes-lib
+            example: !include examples/error-examples/error-500.json
+            
+  /{nationalID}:
+    get:
+      securedBy: [oauth 2.0]
+      is: [x-co-relation-id-header, x-transaction-id-header]
+      responses:
+        200:
+          body:
+            application/json:
+              type: uhub-sapi-common-datatypes.get-covid-case-by-national-id-response-datatypes
+              example: !include examples/get-covid-case-by-national-id-response-payload.json
+               
+        404:
+          body:
+            application/json:
+              type: error-common-datatypes.error-common-datatypes-lib
+              example: !include examples/error-examples/error-404.json
+        503:
+          body:
+            application/json:
+              type: error-common-datatypes.error-common-datatypes-lib
+              example: !include examples/error-examples/error-503.json    
+        500:
+          body:
+            application/json:
+              type: error-common-datatypes.error-common-datatypes-lib
+              example: !include examples/error-examples/error-500.json               
+/reports:
+  get:
+    securedBy: [oauth 2.0]
+    is: [x-co-relation-id-header, x-transaction-id-header,get-covid-reports-queryparam-trait]
+    responses:
+      200:
+        body:
+          application/json:
+            type: uhub-sapi-common-datatypes.get-covid-reports-by-state-reponse-datatypes
+            example: !include examples/get-reports-by-state-response-payload.json
+      503:
+          body:
+            application/json:
+              type: error-common-datatypes.error-common-datatypes-lib
+              example: !include examples/error-examples/error-503.json        
+      500:
+          body:
+            application/json:
+              type: error-common-datatypes.error-common-datatypes-lib
+              example: !include examples/error-examples/error-500.json
+/healthcheck:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: string
+            example: API is working
+          

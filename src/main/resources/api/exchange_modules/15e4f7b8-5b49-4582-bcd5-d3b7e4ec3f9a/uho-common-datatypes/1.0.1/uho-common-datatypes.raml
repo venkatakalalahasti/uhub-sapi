@@ -1,0 +1,23 @@
+#%RAML 1.0 DataType
+type: object
+properties:
+              code:
+                required: true
+                type: integer
+                description: "Code of the Error"
+              message:
+                required: true
+                type: string
+                description: "error message to specific error"
+              description:
+                required: false
+                type: string
+                description: "Error decritpion to specific error"
+              dateTime:
+                required: true
+                type: string
+                description: data time stamp when error occured
+              transactionId:
+                required: true
+                type: string
+                description: Internal Identifier of the transaction failed
